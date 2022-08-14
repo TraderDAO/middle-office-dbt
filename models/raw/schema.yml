@@ -1,16 +1,16 @@
-version: 2
+# version: 2
 
-models:
-  - name: raw_price
-    description: ""
-    columns:
-      - name: id
-        description: ""
-        tests:
-          - unique
-          - not_null
-      - name: id
-        description: ""
-        tests:
-          - unique
-          - not_null
+# models:
+#   - name: raw_price
+#     description: ""
+#     columns:
+#       - name: id
+#         description: ""
+#         tests:
+#           - unique
+#           - not_null
+#       - name: id
+#         description: ""
+#         tests:
+#           - unique
+#           - not_null

@@ -1,4 +1,4 @@
-with abc as (
+with position_pnl as (
     select
         symbol,
         time,
@@ -19,21 +19,21 @@ lasttime as (
         symbol,
         max(time) as lasttime
     from
-        abc
+        position_pnl
     group by
         symbol
 )
 
 
  select
-        abc.symbol,
-        abc.time,
-         abc.avg_bought_price,
-         abc.avg_sold_price,
-         abc.unrealized_pnl,
-         abc.realized_pnl,
+        position_pnl.symbol,
+        position_pnl.time,
+         position_pnl.avg_bought_price,
+         position_pnl.avg_sold_price,
+         position_pnl.unrealized_pnl,
+         position_pnl.realized_pnl,
         lasttime.lasttime
     from
-         abc
+         position_pnl
     join 
-        lasttime on lasttime.lasttime = abc.time
+        lasttime on lasttime.lasttime = position_pnl.time

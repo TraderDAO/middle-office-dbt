@@ -5,6 +5,7 @@ select
     raworder.price,
     raworder.cost,
     raworder.time,
+    raworder.executedqty,
     markprice.mark_price,
     case WHEN buyqty.buy_qty > 0 THEN buyqty.buy_qty
     ELSE 0

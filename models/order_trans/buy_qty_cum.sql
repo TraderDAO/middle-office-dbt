@@ -1,5 +1,7 @@
     select
         orderid,
+        -- buy_qty,
+        executedqty,
         sum(buy_qty) over (
             PARTITION By symbol
             ORDER By time

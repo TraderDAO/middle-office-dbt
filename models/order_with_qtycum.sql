@@ -5,7 +5,10 @@ select
     order_with_qty.price,
     order_with_qty.cost,
     order_with_qty.time,
+    -- order_with_qty.sell_qty,
+    -- order_with_qty.buy_qty,
     order_with_qty.mark_price,
+    order_with_qty.executedqty,
     buyqtycum.buy_qty_cum,
     sellqtycum.sell_qty_cum,
     buycost.buy_cost_cum,
@@ -14,10 +17,11 @@ select
     buyqtycum.buy_qty_cum - sellqtycum.sell_qty_cum as total_qty,
     buyqtycum.buy_qty_cum - sellqtycum.sell_qty_cum as incomming_qty,
     (order_with_qty.mark_price * (buyqtycum.buy_qty_cum - sellqtycum.sell_qty_cum)) - (buycost.buy_cost_cum - sellcost.sell_cost_cum) as unrealizedPnL,
-    case
-        WHEN cum_sold_cost > 0 THEN cum_sold_cost
-        ELSE 0
-    END cum_sold_cost
+    -- case
+    --     WHEN cum_sold_cost > 0 THEN cum_sold_cost
+    --     ELSE 0
+    -- END 
+    cum_sold_cost
 
 FROM {{ ref('order_with_qty') }}
 LEFT JOIN {{ ref('buy_qty_cum') }} buyqtycum on buyqtycum.orderid = order_with_qty.orderid

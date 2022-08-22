@@ -28,7 +28,7 @@ lasttime as (
 
     select
         position_pnl.symbol,
-        position_pnl.time as last_tx_time,
+        -- position_pnl.time as last_tx_time,
         position_pnl.avg_bought_price,
         position_pnl.buy_qty_cum as bought_qty,
         position_pnl.avg_sold_price,
@@ -45,6 +45,7 @@ lasttime as (
     join lasttime on lasttime.lasttime = position_pnl.time
     join {{ ref('incomingPnL') }} incoming on incoming.symbol = position_pnl.symbol
     LEFT join {{ ref('tradingPnL') }} trading on trading.symbol = position_pnl.symbol
+    order by realized_pnl DESC
 
 
  

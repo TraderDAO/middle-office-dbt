@@ -5,6 +5,8 @@ with raw_incoming as (
         timestamp as incoming_time
     from
         dbt_traderdao.incomingprice
+        -- public.incomingprice
+
 ),
 incoming_table as (
     select

@@ -1,51 +1,35 @@
-with position_pnl as (
-    select
-        symbol,
-        time,
-        avg_bought_price,
-        buy_qty_cum,
-        avg_sold_price,
-        sell_qty_cum,
-        unrealizedPnL as unrealized_pnl,
-        realized_pnl,
-        RANk() over (
-            PARTITION by symbol
-            order by
-                time
-        )
-    from
-        {{ ref('order_with_realized_pnl') }}
-),
-lasttime as (
+with last_update_time as (
     select
         symbol,
         max(time) as lasttime
     from
-        position_pnl
+       {{ ref('order_with_realized_pnl') }}
     group by
         symbol
 )
-
     select
-        position_pnl.symbol,
-        -- position_pnl.time as last_tx_time,
-        position_pnl.avg_bought_price,
-        position_pnl.buy_qty_cum as bought_qty,
-        position_pnl.avg_sold_price,
-        position_pnl.sell_qty_cum as Sold_qty,
-        position_pnl.unrealized_pnl,
-        position_pnl.realized_pnl,
-        incoming.mark_price,
+        -- owrpnl.orderid,
+        owrpnl.symbol,
+        owrpnl.avg_bought_price,
+        owrpnl.buy_qty_cum as bought_qty,
+        owrpnl.avg_sold_price,
+        owrpnl.sell_qty_cum as Sold_qty,
+        owrpnl.unrealizedpnl as unrealized_pnl,
+        owrpnl.realized_pnl,
+        owrpnl.mark_price,
+        owrpnl.mark_time,
         incoming.incoming_pnl,
-        -- incoming.incoming_time,
-        case when trading.orders_trading_pnl is null then 0
-        else trading.orders_trading_pnl end
+        incoming.settlement_time,
+        case when trading.trading_pnl_cum is null then 0
+        else trading.trading_pnl_cum end
     from
-         position_pnl
-    join lasttime on lasttime.lasttime = position_pnl.time
-    join {{ ref('incomingPnL') }} incoming on incoming.symbol = position_pnl.symbol
-    LEFT join {{ ref('tradingPnL') }} trading on trading.symbol = position_pnl.symbol
+       {{ ref('order_with_realized_pnl') }} owrpnl
+    join last_update_time on last_update_time.lasttime = owrpnl.time and owrpnl.symbol = last_update_time.symbol
+    join {{ ref('incoming_pnl') }} incoming on incoming.symbol = owrpnl.symbol
+    LEFT join {{ ref('trading_pnl') }} trading on trading.symbol = owrpnl.symbol
     order by realized_pnl DESC
+   
+
 
 
  

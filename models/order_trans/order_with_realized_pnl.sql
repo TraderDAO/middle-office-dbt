@@ -4,9 +4,9 @@ with raw_cum_sold_cost as (
         case
             when cum_sold_cost is null THEN 0
             else 1
-        end rawCumSoldCost -- , 
+        end rawCumSoldCost
     from
-        {{ ref('order_with_qtycum') }}
+        {{ ref('order_with_unrealized_pnl') }}
 ),
 cum_sold_cost_par as (
     select
@@ -32,7 +32,6 @@ adj_cum_sold_cost as (
 )
 
 select 
-    *,
     sell_cost_cum - (
         case
             when adj_cum_sold_cost = 0 THEN sum(adj_cum_sold_cost) over (
@@ -57,7 +56,8 @@ select
         case
             WHEN sell_qty_cum > 0 THEN ROUND(sell_cost_cum / sell_qty_cum, 6)
             ELSE 0
-        END avg_sold_price
+        END avg_sold_price,
+    *
 from adj_cum_sold_cost
         
         

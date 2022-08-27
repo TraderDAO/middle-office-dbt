@@ -2,14 +2,14 @@
 # Name your project! Project names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
-# name: 'orangecloud'
-name: 'traderDao'
+
+name: 'orangecloud'
 version: '1.0.0'
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
-profile: 'traderDao'
-# profile: 'orangecloud'
+
+profile: 'orangecloud'
 
 
 # These configurations specify where dbt should look for different types of files.

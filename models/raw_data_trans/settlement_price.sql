@@ -5,4 +5,8 @@ select
     datetime as settlement_time,
     receivetime as receive_time
 from
-    dbt_traderdao.settlementprice -- public.incomingprice
+    -- dbt_traderdao.settlementprice 
+    -- public.settlementprice
+        {% if target.name == 'dev' %}  dbt_traderdao.settlementprice  
+        {% elif target.name == 'prod' %}  public.settlementprice
+        {% endif %}

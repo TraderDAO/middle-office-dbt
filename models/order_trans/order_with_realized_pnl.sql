@@ -31,7 +31,8 @@ adj_cum_sold_cost as (
     from real_cum_sold_cost
 )
 
-select 
+select
+    distinct *,
     sell_cost_cum - (
         case
             when adj_cum_sold_cost = 0 THEN sum(adj_cum_sold_cost) over (
@@ -56,8 +57,7 @@ select
         case
             WHEN sell_qty_cum > 0 THEN ROUND(sell_cost_cum / sell_qty_cum, 6)
             ELSE 0
-        END avg_sold_price,
-    *
+        END avg_sold_price
 from adj_cum_sold_cost
         
         

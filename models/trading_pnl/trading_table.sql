@@ -6,6 +6,7 @@ with trades_today as (
         trpnl.side,
         trpnl.price,
         trpnl.executedqty,
+        trpnl.cost,
         trpnl.total_qty,
         trpnl.mark_price,
         sp.settlement_price,

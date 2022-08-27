@@ -9,7 +9,7 @@ with last_update_time as (
 )
     select
         -- owrpnl.orderid,
-        owrpnl.symbol,
+        distinct owrpnl.symbol,
         owrpnl.avg_bought_price,
         owrpnl.buy_qty_cum as bought_qty,
         owrpnl.avg_sold_price,
@@ -19,14 +19,28 @@ with last_update_time as (
         owrpnl.mark_price,
         owrpnl.mark_time,
         incoming.incoming_pnl,
-        incoming.settlement_time,
         case when trading.trading_pnl_cum is null then 0
-        else trading.trading_pnl_cum end
+        else trading.trading_pnl_cum end,
+
+        case when dp.daily_avg_bought_price is null then 0
+        else dp.daily_avg_bought_price end,
+
+        case when dp.buy_qty_cum is null then 0
+        else dp.buy_qty_cum end daily_bought_qty,
+
+        case when dp.daily_avg_sold_price is null then 0
+        else dp.daily_avg_sold_price end,
+        
+        case when dp.sell_qty_cum is null then 0
+        else dp.sell_qty_cum end daily_sold_qty,
+        incoming.settlement_time
+
     from
        {{ ref('order_with_realized_pnl') }} owrpnl
     join last_update_time on last_update_time.lasttime = owrpnl.time and owrpnl.symbol = last_update_time.symbol
     join {{ ref('incoming_pnl') }} incoming on incoming.symbol = owrpnl.symbol
     LEFT join {{ ref('trading_pnl') }} trading on trading.symbol = owrpnl.symbol
+    LEFT join {{ ref('daily_price') }} dp on dp.symbol = owrpnl.symbol
     order by realized_pnl DESC
    
 

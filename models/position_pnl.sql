@@ -6,21 +6,23 @@ with last_update_time as (
        {{ ref('order_with_realized_pnl') }}
     group by
         symbol
-)
+),
+position as (
     select
-        -- owrpnl.orderid,
         distinct owrpnl.symbol,
+        owrpnl.total_qty,
+        owrpnl.total_qty * owrpnl.mark_price as position_value,
         owrpnl.avg_bought_price,
         owrpnl.buy_qty_cum as bought_qty,
         owrpnl.avg_sold_price,
         owrpnl.sell_qty_cum as Sold_qty,
-        owrpnl.unrealizedpnl as unrealized_pnl,
-        owrpnl.realized_pnl,
+        owrpnl.unrealizedpnl as unrealized_pnL,
+        owrpnl.realized_pnL,
         owrpnl.mark_price,
         owrpnl.mark_time,
-        incoming.incoming_pnl,
+        incoming.incoming_pnL,
         case when trading.trading_pnl_cum is null then 0
-        else trading.trading_pnl_cum end,
+        else trading.trading_pnl_cum end trading_pnL,
 
         case when dp.daily_avg_bought_price is null then 0
         else dp.daily_avg_bought_price end,
@@ -41,7 +43,12 @@ with last_update_time as (
     join {{ ref('incoming_pnl') }} incoming on incoming.symbol = owrpnl.symbol
     LEFT join {{ ref('trading_pnl') }} trading on trading.symbol = owrpnl.symbol
     LEFT join {{ ref('daily_price') }} dp on dp.symbol = owrpnl.symbol
-    order by realized_pnl DESC
+)
+
+
+
+
+
    
 
 

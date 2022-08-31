@@ -29,38 +29,26 @@ real_cum_sold_cost as (
 adj_cum_sold_cost as (
     SELECT *, case when realCumSoldCost is null then 0 else realCumSoldCost end adj_cum_sold_cost
     from real_cum_sold_cost
-)
+),
 
-select
-    distinct *,
-    sell_cost_cum - (
-        case
-            when adj_cum_sold_cost = 0 THEN sum(adj_cum_sold_cost) over (
-                PARTITION by symbol
-                order by
-                    time
-            )
-            else adj_cum_sold_cost
-        end
-    ) as realized_pnl,
-    case when total_qty = 0 then 0 else 
-        ROUND((total_cost + (sell_cost_cum - (
-            case
-                when adj_cum_sold_cost = 0 THEN sum(adj_cum_sold_cost) over (
-                    PARTITION by symbol
-                    order by
-                        time
-                )
-                else adj_cum_sold_cost
-            end
-        ))) / total_qty, 6) end avg_bought_price,
+realized as (
+    select
+        distinct *,
+        sell_cost_cum - adj_cum_sold_cost as realized_pnl,
+        case when total_qty = 0 then 0 else 
+            ROUND((total_cost + (sell_cost_cum - adj_cum_sold_cost)) / total_qty, 6) 
+        end avg_bought_price,
         case
             WHEN sell_qty_cum > 0 THEN ROUND(sell_cost_cum / sell_qty_cum, 6)
             ELSE 0
         END avg_sold_price
-from adj_cum_sold_cost
-        
-        
-        
-        
-        
+    from adj_cum_sold_cost
+    order by time
+)
+
+select 
+    *, 
+    unrealized - realized_pnl as unrealizedpnl,
+    sum(realized_pnl) over ( PARTITION by symbol order by time) as realized
+from 
+    realized

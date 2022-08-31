@@ -45,12 +45,7 @@ position as (
     LEFT join {{ ref('daily_price') }} dp on dp.symbol = owrpnl.symbol
 )
 
-
-
-
-
-   
-
-
-
- 
+select * from position
+union
+select * from {{ ref('stable_coin_table') }}
+order by position_value DESC

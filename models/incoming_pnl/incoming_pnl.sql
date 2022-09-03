@@ -1,16 +1,16 @@
-with last_incoming_time as (
+with incoming_pnl_per_unit as (
     select
-        symbol,
-        max(settlement_timestamp) last_settlement_time
+        st.*,
+        st.mark_price - st.settlement_price incoming_gain_pu,
+        slt.lasttrade
     from
-        {{ ref('incoming_pnl_historical') }}
-    group by
-        symbol
+        {{ ref('settlement_table') }} st
+        join {{ ref('settlement_last_trade') }} slt
+        on slt.lasttrade = st.time
 )
 
 select 
-    distinct sp.*
+    distinct *,
+    total_qty * incoming_gain_pu as incoming_pnl
 from 
-   {{ ref('incoming_pnl_historical') }}  sp
-join 
-    last_incoming_time on last_incoming_time.last_settlement_time = sp.settlement_timestamp
+    incoming_pnl_per_unit

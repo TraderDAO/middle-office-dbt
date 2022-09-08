@@ -1,0 +1,432 @@
+version: 0.0.4
+
+models:
+  # Original Data Cleaning
+  - name: raw_order
+        columns:
+            - name: orderid
+            - name: symbol
+            - name: base
+            - name: side
+            - name: price
+            - name: amount
+            - name: cost
+            - name: executedqty
+            - name: remaining
+            - name: time
+  - name: mark_price
+        columns:
+            - name: symbol
+            - name: mark_price
+            - name: mark_time
+            - name: receive_time
+  - name: settlement_price
+        columns:
+            - name: symbol
+            - name: settlement_price
+            - name: settlement_timestamp
+            - name: settlement_time
+            - name: receive_time
+            - name: last_settlement_time
+  - name: stable_coin_table
+        columns:
+            - name: symbol
+            - name: total_qty
+            - name: position_value
+            - name: avg_bought_price
+            - name: bought_qty
+            - name: avg_sold_price
+            - name: sold_qty
+            - name: unrealized_pnl
+            - name: realized_pnl
+            - name: mark_price
+            - name: mark_time
+            - name: timestamp
+            - name: incoming_pnl
+            - name: trading_pnl
+            - name: daily_avg_bought_price
+            - name: daily_bought_qty
+            - name: daily_avg_sold_price
+            - name: daily_sold_qty
+            - name: settlement_time
+
+  # FIFO
+  - name: buy_order
+    columns:
+      - name: symbol
+      - name: buy_order_id
+      - name: qty_bought
+        # sum(executedqty) 
+      - name: prev_bought
+      - name: cost
+      - name: total_cost
+      - name: prev_total_cost
+  - name: sell_order
+    columns:
+      - name: orderid
+      - name: symbol
+      - name: time
+      - name: qty_sold
+      - name: cum_sold
+  - name: cum_sold_cost
+    columns:
+      - name: orderid
+      - name: symbol
+      - name: time
+      - name: qty_sold
+      - name: cum_sold
+      - name: qty_bought
+      - name: buy_order_id
+      - name: prev_bought
+      - name: total_cost
+      - name: prev_total_cost
+      - name: cum_sold_cost
+        # prev_total_cost + 
+        # ((cum_sold - prev_bought)/(qty_bought - prev_bought))*(total_cost - prev_total_cost)
+
+  # Calculation over orders: realized PnL and unrealized PnL
+  - name: orders
+    description: 
+    columns:
+      - name: orderid
+      - name: symbol
+      - name: base
+      - name: side
+      - name: price
+      - name: amount
+      - name: cost
+      - name: executedqty
+      - name: remaining
+      - name: time
+      - name: sell_qty
+      - name: buy_qty
+      - name: sell_cost
+      - name: buy_cost
+      - name: mark_price
+      - name: mark_time
+      - name: receive_time
+  - name: orders_cum 
+    description: 
+    columns:
+      - name: orderid
+      - name: symbol
+      - name: base
+      - name: side
+      - name: price
+      - name: amount
+      - name: cost
+      - name: executedqty
+      - name: remaining
+      - name: time
+      - name: sell_qty
+      - name: buy_qty
+      - name: sell_cost
+      - name: buy_cost
+      - name: mark_price
+      - name: mark_time
+      - name: receive_time
+      - name: buy_qty_cum
+      - name: sell_qty_cum
+      - name: sell_cost_cum
+      - name: buy_cost_cum
+  - name: orders_with_unrealized_pnl 
+    description: 
+    columns:
+      - name: orderid
+      - name: symbol
+      - name: base
+      - name: side
+      - name: price
+      - name: amount
+      - name: cost
+      - name: executedqty
+      - name: remaining
+      - name: time
+      - name: sell_qty
+      - name: buy_qty
+      - name: sell_cost
+      - name: buy_cost
+      - name: mark_price
+      - name: mark_time
+      - name: receive_time
+      - name: buy_qty_cum
+      - name: sell_qty_cum
+      - name: sell_cost_cum
+      - name: buy_cost_cum
+      - name: total_cost
+        # buy_cost_cum - sell_cost_cum as total_cost
+      - name: total_qty
+        # buy_qty_cum - sell_qty_cum as total_qty
+      - name: unrealized
+        # (mark_price * (buy_qty_cum - sell_qty_cum)) - (buy_cost_cum - sell_cost_cum)
+        # mark_price * position_qty - position_cost
+      - name: cum_sold_cost
+        # join from fifo component
+  - name: orders_with_realized_pnl 
+    description: 
+    columns:
+      - name: orderid
+      - name: symbol
+      - name: base
+      - name: side
+      - name: price
+      - name: amount
+      - name: cost
+      - name: executedqty
+      - name: remaining
+      - name: time
+      - name: sell_qty
+      - name: buy_qty
+      - name: sell_cost
+      - name: buy_cost
+      - name: mark_price
+      - name: mark_time
+      - name: receive_time
+      - name: buy_qty_cum
+      - name: sell_qty_cum
+      - name: sell_cost_cum
+      - name: buy_cost_cum
+      - name: total_cost
+      - name: total_qty
+      - name: unrealized
+      - name: cum_sold_cost
+        # Dealing with cum_sold_cost data formatting
+      - name: rawcumsoldcost
+      - name: cumsoldcpstpar
+      - name: realcumsoldcost
+      - name: adj_cum_sold_cost
+        # end
+      - name: realized_pnl
+        # sell_cost_cum - adj_cum_sold_cost 
+      - name: avg_bought_price
+        (buy_cost_cum - sell_cost_cum) + (sell_cost_cum - adj_cum_bought_cost)
+        # (total_cost + realized_pnl) / total_qty
+      - name: avg_sold_price
+        # sell_cost_cum / sell_qty_cum
+      - name: unrealizedpnl
+        # unrealized - realized_pnl
+      - name: realized
+        # cum_realized_pnl
+  
+  # Calculation for incoming pnl
+  - name: settlement_table
+    columns:
+      - name: orderid
+      - name: time
+      - name: symbol
+      - name: side
+      - name: price
+      - name: total_qty
+      - name: mark_price
+      - name: settlement_price
+      - name: settlement_timestamp
+      - name: settlement_time
+      - name: receive_time
+    # Where the time of order was before today
+  - name: settlement_last_trade
+    columns:
+      - name: symbol
+      - name: last_trade
+  - name: incoming_pnl
+    columns:
+      - name: orderid
+      - name: time
+      - name: symbol
+      - name: side
+      - name: price
+      - name: total_qty
+      - name: mark_price
+      - name: settlement_price
+      - name: settlement_timestamp
+      - name: settlement_time
+      - name: receive_time
+      - name: incoming_gain_pu
+        # mark_price - settlement_price
+      - name: lasttrade
+      - name: incoming_pnl
+        # total_qty * incoming_gain_pu
+
+  # Calculation for trading pnl
+  - name: settlement_table
+    columns:
+      - name: orderid
+      - name: time
+      - name: symbol
+      - name: side
+      - name: price
+      - name: executedqty
+      - name: cost
+      - name: total_qty
+      - name: mark_price
+      - name: settlement_price
+      - name: settlement_timestamp
+      - name: settlement_time
+      - name: receive_time
+    # Where the time of order is today
+  - name: settlement_pnl_by_order
+    columns:
+      - name: orderid
+      - name: time
+      - name: symbol
+      - name: side
+      - name: price
+      - name: executedqty
+      - name: cost
+      - name: total_qty
+      - name: mark_price
+      - name: settlement_price
+      - name: settlement_timestamp
+      - name: settlement_time
+      - name: receive_time
+      - name: trade_side
+        # if side = 'buy' then 1 else 0
+      - name: unsign_ordertradingpnl
+        # ( mark_price - price ) * executedqty
+      - name: trading_pnl
+        # unsign_ordertradingpnl * trade_side
+      - name: trading_pnl_cum
+  - name: settlement_pnl
+    columns:
+      - name: orderid
+      - name: time
+      - name: symbol
+      - name: side
+      - name: price
+      - name: executedqty
+      - name: cost
+      - name: total_qty
+      - name: mark_price
+      - name: settlement_price
+      - name: settlement_timestamp
+      - name: settlement_time
+      - name: receive_time
+      - name: trade_side
+      - name: unsign_ordertradingpnl
+      - name: trading_pnl
+      - name: trading_pnl_cum
+    # Select the summation of trading PnL on each position
+  - name: daily_price
+    columns:
+      - name: orderid
+      - name: time
+      - name: symbol
+      - name: side
+      - name: price
+      - name: executedqty
+      - name: cost
+      - name: buy_qty_cum
+      - name: buy_cost_cum
+      - name: sell_qty_cum
+      - name: sell_cost_cum
+      - name: daily_avg_bought_price
+        # buy_cost_cum/ buy_qty_cum
+      - name: daily_avg_sold_price
+        # sell_cost_cum/ sell_qty_cum
+
+  # Position pnl
+  - name: position_pnl
+    columns:
+      - name: symbol
+      - name: total_qty
+      - name: position_value
+      - name: avg_bought_price
+      - name: bought_qty
+      - name: avg_sold_price
+      - name: sold_qty
+      - name: unrealized_pnl
+      - name: realized_pnl
+      - name: mark_price
+      - name: mark_time
+      - name: timestamp
+      - name: incoming_pnl
+      - name: trading_pnl
+      - name: daily_avg_bought_price
+      - name: daily_bought_qty
+      - name: daily_avg_sold_price
+      - name: daily_sold_qty
+      - name: settlement_time
+  # union stable coin pnl in this view
+
+  # Portfolio pnl
+  - name: portfolio_pnl
+    columns:
+      - name: portfolio_value
+      - name: unrealized_pnL
+      - name: realized_pnL
+      - name: total_pnL
+        # sum(realized_pnl) + sum(unrealized_pnl)
+      - name: incoming_pnL
+      - name: trading_pnL
+      - name: netting_pnL
+        # sum(incoming_pnl) + sum(trading_pnl)
+
+sources:
+  - name: dbt_orangesky
+    tables:
+      - name: orderstable
+        description: Orders info from exchange
+        columns:
+            - name: id
+            - name: time
+            - name: orderid
+            - name: symbol
+            - name: base
+            - name: side
+            - name: price
+            - name: amount
+            - name: cost            
+            - name: executedqty
+            - name: remaining
+            - name: type
+            - name: openstatus
+            - name: unfilledstatus
+            - name: portfolio_id
+            - name: account_id
+            - name: exchange_id
+      - name: markprice
+        description: 
+          We use the last trade from exchange as mark price. 
+          Not all exchange provide timestamp data in order book or price ticker API
+          because of the latency issue.
+        columns:
+            - name: id
+            - name: symbol
+            - name: price
+            - name: timestamp
+            - name: datetime
+            - name: receivetime
+            - name: receivetimestamp            
+      - name: settlementprice
+        description: We use the price at UTC 00 as settlement price
+        columns:
+            - name: id
+            - name: symbol
+            - name: price
+            - name: timestamp
+            - name: datetime
+            - name: receivetime
+            - name: receivetimestamp   
+      - name: stablecoinpnl
+        description: 
+          Inorder to calculate the total value of portfolio,
+          we get the stable coin in the protfolio value from exchange.
+        columns:
+            - name: symbol
+            - name: total_qty
+            - name: position_value
+            - name: avg_bought_price
+            - name: bought_qty
+            - name: avg_sold_price
+            - name: sold_qty
+            - name: unrealized_pnl
+            - name: realized_pnl
+            - name: mark_price
+            - name: mark_time
+            - name: timestamp
+            - name: incoming_pnl
+            - name: trading_pnl
+            - name: daily_avg_bought_price
+            - name: daily_bought_qty
+            - name: daily_avg_sold_price
+            - name: daily_sold_qty
+            - name: settlement_time

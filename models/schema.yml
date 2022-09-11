@@ -1,54 +1,54 @@
-version: 0.0.4
+version: 2
 
 models:
-  # Original Data Cleaning
   - name: raw_order
-        columns:
-            - name: orderid
-            - name: symbol
-            - name: base
-            - name: side
-            - name: price
-            - name: amount
-            - name: cost
-            - name: executedqty
-            - name: remaining
-            - name: time
+    description: Original Data Cleaning
+    columns:
+      - name: orderid
+      - name: symbol
+      - name: base
+      - name: side
+      - name: price
+      - name: amount
+      - name: cost
+      - name: executedqty
+      - name: remaining
+      - name: time
   - name: mark_price
-        columns:
-            - name: symbol
-            - name: mark_price
-            - name: mark_time
-            - name: receive_time
+    columns:
+      - name: symbol
+      - name: mark_price
+      - name: mark_time
+      - name: receive_time
   - name: settlement_price
-        columns:
-            - name: symbol
-            - name: settlement_price
-            - name: settlement_timestamp
-            - name: settlement_time
-            - name: receive_time
-            - name: last_settlement_time
+    columns:
+      - name: symbol
+      - name: settlement_price
+      - name: settlement_timestamp
+      - name: settlement_time
+      - name: receive_time
+      - name: last_settlement_time
   - name: stable_coin_table
-        columns:
-            - name: symbol
-            - name: total_qty
-            - name: position_value
-            - name: avg_bought_price
-            - name: bought_qty
-            - name: avg_sold_price
-            - name: sold_qty
-            - name: unrealized_pnl
-            - name: realized_pnl
-            - name: mark_price
-            - name: mark_time
-            - name: timestamp
-            - name: incoming_pnl
-            - name: trading_pnl
-            - name: daily_avg_bought_price
-            - name: daily_bought_qty
-            - name: daily_avg_sold_price
-            - name: daily_sold_qty
-            - name: settlement_time
+    columns:
+      - name: symbol
+      - name: total_qty
+      - name: position_value
+      - name: avg_bought_price
+      - name: bought_qty
+      - name: avg_sold_price
+      - name: sold_qty
+      - name: unrealized_pnl
+      - name: realized_pnl
+      - name: mark_price
+      - name: mark_time
+      - name: timestamp
+      - name: incoming_pnl
+      - name: trading_pnl
+      - name: daily_avg_bought_price
+      - name: daily_bought_qty
+      - name: daily_avg_sold_price
+      - name: daily_sold_qty
+      - name: settlement_time
 
   # FIFO
   - name: buy_order
@@ -68,7 +68,7 @@ models:
       - name: time
       - name: qty_sold
       - name: cum_sold
-  - name: cum_sold_cost
+  - name: cum_bought_cost
     columns:
       - name: orderid
       - name: symbol
@@ -80,13 +80,12 @@ models:
       - name: prev_bought
       - name: total_cost
       - name: prev_total_cost
-      - name: cum_sold_cost
+      - name: cum_bought_cost
         # prev_total_cost + 
         # ((cum_sold - prev_bought)/(qty_bought - prev_bought))*(total_cost - prev_total_cost)
 
   # Calculation over orders: realized PnL and unrealized PnL
   - name: orders
-    description: 
     columns:
       - name: orderid
       - name: symbol
@@ -105,8 +104,7 @@ models:
       - name: mark_price
       - name: mark_time
       - name: receive_time
-  - name: orders_cum 
-    description: 
+  - name: order_cum 
     columns:
       - name: orderid
       - name: symbol
@@ -129,8 +127,7 @@ models:
       - name: sell_qty_cum
       - name: sell_cost_cum
       - name: buy_cost_cum
-  - name: orders_with_unrealized_pnl 
-    description: 
+  - name: order_with_unrealized_pnl 
     columns:
       - name: orderid
       - name: symbol
@@ -160,10 +157,9 @@ models:
       - name: unrealized
         # (mark_price * (buy_qty_cum - sell_qty_cum)) - (buy_cost_cum - sell_cost_cum)
         # mark_price * position_qty - position_cost
-      - name: cum_sold_cost
+      - name: cum_bought_cost
         # join from fifo component
-  - name: orders_with_realized_pnl 
-    description: 
+  - name: order_with_realized_pnl 
     columns:
       - name: orderid
       - name: symbol
@@ -189,17 +185,17 @@ models:
       - name: total_cost
       - name: total_qty
       - name: unrealized
-      - name: cum_sold_cost
-        # Dealing with cum_sold_cost data formatting
+      - name: cum_bought_cost
+        # Dealing with cum_bought_cost data formatting
       - name: rawcumsoldcost
       - name: cumsoldcpstpar
       - name: realcumsoldcost
-      - name: adj_cum_sold_cost
+      - name: adj_cum_bought_cost
         # end
       - name: realized_pnl
-        # sell_cost_cum - adj_cum_sold_cost 
+        # sell_cost_cum - adj_cum_bought_cost 
       - name: avg_bought_price
-        (buy_cost_cum - sell_cost_cum) + (sell_cost_cum - adj_cum_bought_cost)
+        # (buy_cost_cum - sell_cost_cum) + (sell_cost_cum - adj_cum_bought_cost)
         # (total_cost + realized_pnl) / total_qty
       - name: avg_sold_price
         # sell_cost_cum / sell_qty_cum
@@ -247,7 +243,7 @@ models:
         # total_qty * incoming_gain_pu
 
   # Calculation for trading pnl
-  - name: settlement_table
+  - name: trading_table
     columns:
       - name: orderid
       - name: time
@@ -263,7 +259,7 @@ models:
       - name: settlement_time
       - name: receive_time
     # Where the time of order is today
-  - name: settlement_pnl_by_order
+  - name: trading_pnl_by_order
     columns:
       - name: orderid
       - name: time
@@ -285,7 +281,7 @@ models:
       - name: trading_pnl
         # unsign_ordertradingpnl * trade_side
       - name: trading_pnl_cum
-  - name: settlement_pnl
+  - name: trading_pnl
     columns:
       - name: orderid
       - name: time

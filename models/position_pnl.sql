@@ -16,7 +16,8 @@ position as (
         owrpnl.buy_qty_cum as bought_qty,
         owrpnl.avg_sold_price,
         owrpnl.sell_qty_cum as Sold_qty,
-        owrpnl.unrealizedpnl as unrealized_pnL,
+        case when owrpnl.total_qty = 0 then 0
+        else owrpnl.unrealizedpnl end unrealized_pnL,
         owrpnl.realized_pnL,
         owrpnl.mark_price,
         owrpnl.mark_time,

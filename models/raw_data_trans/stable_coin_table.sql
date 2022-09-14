@@ -25,5 +25,5 @@ with last_time as (
         {% if target.name == 'dev' %} dbt_traderdao.stablecoinpnl stable
         {% elif target.name == 'prod' %} public.stablecoinpnl stable
         {% endif %}
-    join last_time on last_time.last_time = stable.timestamp
+    join last_time on last_time.last_time = stable.timestamp and last_time.symbol = stable.symbol
 

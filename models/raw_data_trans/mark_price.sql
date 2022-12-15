@@ -4,7 +4,7 @@ WITH last_time AS (
         symbol
     FROM
         {% if target.name == 'dev' %}
-            dbt_traderdao.markprice mp {% elif target.name == 'prod' %}
+            PUBLIC.markprice mp {% elif target.name == 'prod' %}
             PUBLIC.markprice mp
         {% endif %}
     GROUP BY
@@ -16,7 +16,7 @@ last_receivetime AS (
         symbol
     FROM
         {% if target.name == 'dev' %}
-            dbt_traderdao.markprice mp {% elif target.name == 'prod' %}
+            PUBLIC.markprice mp {% elif target.name == 'prod' %}
             PUBLIC.markprice mp
         {% endif %}
     GROUP BY
@@ -32,7 +32,7 @@ mark_table AS (
         last_mark_time
     FROM
         {% if target.name == 'dev' %}
-            dbt_traderdao.markprice mp {% elif target.name == 'prod' %}
+            PUBLIC.markprice mp {% elif target.name == 'prod' %}
             PUBLIC.markprice mp
         {% endif %}
         JOIN last_time

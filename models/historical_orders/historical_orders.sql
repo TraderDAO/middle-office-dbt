@@ -1,29 +1,27 @@
-with today as (
-    select 
-        distinct max(timestamp) as today_timestamp
-    from 
-        {% if target.name == 'dev' %}  dbt_traderdao.settlementprice 
-        {% elif target.name == 'prod' %}  public.settlementprice
+WITH today AS (
+    SELECT
+        DISTINCT MAX(TIMESTAMP) AS today_timestamp
+    FROM
+        {% if target.name == 'dev' %}
+            PUBLIC.settlementprice {% elif target.name == 'prod' %}
+            PUBLIC.settlementprice
         {% endif %}
 ),
-orders as (
+orders AS (
     SELECT
-        distinct orders.*,
+        DISTINCT orders.*,
         today.today_timestamp
     FROM
-        {% if target.name == 'dev' %}  dbt_traderdao.orderstable  orders
-        {% elif target.name == 'prod' %}  public.orderstable orders
+        {% if target.name == 'dev' %}
+            PUBLIC.orderstable orders {% elif target.name == 'prod' %}
+            PUBLIC.orderstable orders
         {% endif %}
-    join today on today.today_timestamp is not null
+        JOIN today
+        ON today.today_timestamp IS NOT NULL
 )
-
-select 
+SELECT
     *
-from    
+FROM
     orders
-where 
-    time < today_timestamp
-
-
-
-   
+WHERE
+    TIME < today_timestamp

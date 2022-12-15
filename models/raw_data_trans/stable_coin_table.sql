@@ -4,7 +4,7 @@ WITH last_time AS (
         symbol
     FROM
         {% if target.name == 'dev' %}
-            dbt_traderdao.stablecoinpnl stable {% elif target.name == 'prod' %}
+            PUBLIC.stablecoinpnl stable {% elif target.name == 'prod' %}
             PUBLIC.stablecoinpnl stable
         {% endif %}
     GROUP BY
@@ -35,7 +35,7 @@ SELECT
     stable.settlement_time
 FROM
     {% if target.name == 'dev' %}
-        dbt_traderdao.stablecoinpnl stable {% elif target.name == 'prod' %}
+        PUBLIC.stablecoinpnl stable {% elif target.name == 'prod' %}
         PUBLIC.stablecoinpnl stable
     {% endif %}
     JOIN last_time

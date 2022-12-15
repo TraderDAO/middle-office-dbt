@@ -1,26 +1,55 @@
-with last_time as (
-    select
-        max(timestamp) last_mark_time,
+WITH last_time AS (
+    SELECT
+        MAX(TIMESTAMP) last_mark_time,
         symbol
-    from
-        {% if target.name == 'dev' %} dbt_traderdao.markprice mp
-        {% elif target.name == 'prod' %} public.markprice mp
+    FROM
+        {% if target.name == 'dev' %}
+            dbt_traderdao.markprice mp {% elif target.name == 'prod' %}
+            PUBLIC.markprice mp
         {% endif %}
-    group by symbol
+    GROUP BY
+        symbol
 ),
-mark_table as (
-    select
-        distinct mp.symbol, mp.price as mark_price, mp.datetime as mark_time, mp.receivetime as receive_time,
-        last_mark_time
-    from
-        {% if target.name == 'dev' %} dbt_traderdao.markprice mp
-        {% elif target.name == 'prod' %} public.markprice mp
+last_receivetime AS (
+    SELECT
+        MAX(receivetimestamp) last_receive_time,
+        symbol
+    FROM
+        {% if target.name == 'dev' %}
+            dbt_traderdao.markprice mp {% elif target.name == 'prod' %}
+            PUBLIC.markprice mp
         {% endif %}
-    join last_time on last_time.last_mark_time = mp.timestamp
-    order by mp.symbol
+    GROUP BY
+        symbol
+),
+mark_table AS (
+    SELECT
+        DISTINCT mp.symbol,
+        mp.price AS mark_price,
+        mp.datetime AS mark_time,
+        mp.receivetime AS receive_time,
+        mp.timestamp,
+        last_mark_time
+    FROM
+        {% if target.name == 'dev' %}
+            dbt_traderdao.markprice mp {% elif target.name == 'prod' %}
+            PUBLIC.markprice mp
+        {% endif %}
+        JOIN last_time
+        ON last_time.last_mark_time = mp.timestamp
+        JOIN last_receivetime
+        ON last_receivetime.last_receive_time = mp.receivetimestamp
+    ORDER BY
+        mp.symbol
 )
-select 
-    split_part(symbol, '/', 1) as symbol,
-    mark_price, mark_time, receive_time
-from 
+SELECT
+    SPLIT_PART(
+        symbol,
+        '/',
+        1
+    ) AS symbol,
+    mark_price,
+    mark_time,
+    receive_time
+FROM
     mark_table
